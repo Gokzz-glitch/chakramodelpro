@@ -1,0 +1,67 @@
+# ============================================================
+# Polyp Detection Research — .gitignore
+# ============================================================
+
+# --- Model checkpoints (large binary files) ---
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.h5
+
+# --- Raw data (download separately, too large for git) ---
+data/raw/
+data/processed/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- IDE & OS ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb
+
+# --- Secrets & credentials ---
+.env
+.env.*
+secrets.yaml
+*.key
+
+# --- Weights & Biases / MLflow ---
+wandb/
+mlruns/
+mlartifacts/
+
+# --- Temp / scratch ---
+tmp/
+*.tmp
+*.log
+
+# --- Results (large; commit only summaries) ---
+results/sample_predictions/*.png
+results/sample_predictions/*.jpg
+results/plots/*.png
