@@ -92,3 +92,43 @@
 ---
 
 *Session ended: ~22:30 IST*
+
+## 2026-09-12 — Session 2: Expanded Literature & Industry Trends
+
+**Date**: Saturday, 2026-09-12  
+**Time**: ~22:45 IST  
+
+---
+
+### What Was Done
+
+1. **Literature Review Expansion**:
+   - Expanded the literature review from 18 papers to 58 peer-reviewed papers with quantitative metrics.
+   - Updated the SOTA comparison tables based on the new papers.
+   - Created a python script `scripts/verify_literature_review.py` to automatically verify literature review integrity (no duplicates, missing metrics).
+
+2. **Industry Trends Analysis**:
+   - Researched the top companies leading the field of AI-assisted colonoscopy (e.g., Medtronic / GI Genius, SKOUT).
+   - Compiled a comprehensive 800+ line document at `docs/industry_trends.md` detailing commercial Real-Time Video CADe/CADx Systems, clinical evidence, regulatory standards, and architectural technical breakdowns.
+
+3. **Version Control**:
+   - Committed the changes (58 papers + industry trends + verification script) to the repository.
+
+---
+
+### Blockers
+
+- Subagent execution was interrupted by a system restart during the review phase, but the files were successfully generated and have now been committed manually.
+
+---
+
+### Next Steps
+
+1. **Phase 1 Initiation**:
+   - Begin Phase 1 (Dataset preparation and DataLoaders).
+   - Set up the Kvasir-SEG dataset in the `data/raw` folder.
+   - Implement `src/data_loaders/dataset.py` to load and augment Kvasir-SEG images and masks.
+   - Build a PyTorch Dataset class and DataLoader.
+   - Create a visualization script to ensure data is loaded correctly (images and masks align).
+
+---
