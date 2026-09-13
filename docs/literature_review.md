@@ -66,8 +66,9 @@
 - **arXiv**: [1911.07069](https://arxiv.org/abs/1911.07069)
 - **Method Summary**: Introduces Kvasir-SEG, a dataset of 1,000 gastrointestinal polyp images from the Kvasir dataset with pixel-level segmentation masks annotated by experienced gastroenterologists. Establishes FCN-8 and U-Net baselines.
 - **Reported Metrics**:
-  - U-Net baseline: Dice=0.8264, IoU=0.7177 on Kvasir-SEG
-  - FCN-8 baseline: Dice=0.7814, IoU=0.6399 on Kvasir-SEG
+  - FCM clustering baseline: Dice=0.2390, IoU=0.3141 on Kvasir-SEG
+  - ResUNet baseline: Dice=0.7877, IoU=0.7777 on Kvasir-SEG
+  - *(Corrected 2026-09-13 — removed hallucinated baseline numbers not present in source paper.)*
 - **Relevance**: **PRIMARY DATASET** for our experiments. The de facto standard benchmark for polyp segmentation. Must be used and reported.
 - **Dataset**: [simula.no/kvasir-seg](https://datasets.simula.no/kvasir-seg/) — CC-BY 4.0 (free for research and commercial use)
 
@@ -116,8 +117,10 @@
 - **Method Summary**: ColonSegNet is a lightweight encoder-decoder with skip connections designed for real-time performance. Benchmarks 10+ state-of-the-art methods on Kvasir-SEG for both speed (FPS) and accuracy (Dice, IoU). The paper's core contribution is the **comprehensive benchmark** + a model achieving the best speed-accuracy trade-off at 182 FPS.
 - **Reported Metrics** (on Kvasir-SEG):
   - ColonSegNet: Dice=0.8206, IoU=0.8100, Precision=0.8000 @ **182.38 FPS**
-  - vs. U-Net: Dice=0.8264 @ ~8 FPS
-  - vs. ResUNet++: Dice=0.8130 @ ~8 FPS
+  - vs. U-Net: Dice=0.5969 @ 11.01 FPS
+  - vs. U-Net w/ ResNet34 backbone: Dice=0.8757 @ 35 FPS
+  - vs. ResUNet++: Dice=0.7143 @ 7.01 FPS
+  - *(Corrected 2026-09-13 — original numbers were fabricated/cross-contaminated from another source, verified against actual PDF.)*
 - **Key Insight**: Speed-accuracy trade-off is critical for clinical deployment. Most high-accuracy methods run at single-digit FPS, which is inadequate for real-time feedback.
 - **Limitations**: Dice=0.8206 is significantly below PraNet's 0.898. Demonstrates the accuracy-speed tension.
 - **Relevance**: **DIRECT BENCHMARK.** Sets the real-time speed target we need to match or exceed (≥30 FPS for clinical viability, ≥180 FPS for this method's class). Also motivates our research gap.
@@ -403,7 +406,8 @@
 
 ---
 
-#### [P21] FCBFormer: A Fully Convolutional and Vision Transformer Network for Medical Image Segmentation
+#### [P21] FCN-Transformer Feature Fusion for Polyp Segmentation
+*(Commonly known in literature as FCBFormer)*
 - **Authors**: Edward Sanderson, Bogdan J. Matuszewski
 - **Year/Venue**: 2023 / Computer Methods and Programs in Biomedicine (Vol. 231, Article 107385)
 - **arXiv**: [2208.08352](https://arxiv.org/abs/2208.08352)
