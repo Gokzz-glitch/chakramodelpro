@@ -132,3 +132,42 @@
    - Create a visualization script to ensure data is loaded correctly (images and masks align).
 
 ---
+
+## 2026-09-12 — Session 3: Phase 1 (Dataset Preparation & DataLoaders)
+
+**Date**: Saturday, 2026-09-12  
+**Time**: ~22:45 IST  
+
+---
+
+### What Was Done
+
+1. **Dataset Acquisition**:
+   - Automated download and extraction of the **Kvasir-SEG** dataset (1,000 images + masks).
+2. **Dataset Splits**:
+   - Created `src/data_loaders/generate_splits.py` to establish the community standard **900 train / 100 test** split.
+   - Outputs: `data/processed/train.txt` and `data/processed/test_splits/kvasir_test.txt`.
+3. **PyTorch DataLoaders**:
+   - Implemented `src/data_loaders/dataset.py` featuring the `PolypDataset` class.
+   - Integrated `albumentations` for standard medical imaging augmentations (Horizontal/Vertical Flip, RandomRotate90, ShiftScaleRotate, ColorJitter) on the training set, and standard normalization for the test set. Images resized to SOTA standard **352x352**.
+4. **Verification**:
+   - Created `src/utils/visualize_data.py` which loads a batch using PyTorch `DataLoader` and generates an overlay visualization to guarantee spatial alignment of images and masks post-augmentation.
+
+---
+
+### Results / Findings
+
+- The PyTorch `PolypDataset` handles tensor conversions and image-mask alignment perfectly.
+- Sanity checks confirm image inputs scale to `[-2.118, 2.640]` (normalized) and masks to `[0.0, 1.0]`, ready for loss functions.
+
+---
+
+### Next Steps
+
+1. **Phase 2 Initiation**:
+   - Begin **Phase 2 (Baseline Model)**.
+   - Implement a standard Medical Segmentation baseline (e.g., U-Net or PraNet) in `src/models/`.
+   - Setup the training loop in `src/train.py` (losses, optimizers, LR scheduling, wandb logging).
+   - Setup the evaluation loop in `src/eval.py` to compute Dice and IoU on validation set.
+
+---

@@ -4,9 +4,11 @@
 
 # --- Model checkpoints (large binary files) ---
 checkpoints/
+weights/
 *.pt
 *.pth
 *.ckpt
+*.onnx
 *.h5
 
 # --- Raw data (download separately, too large for git) ---
