@@ -171,3 +171,97 @@
    - Setup the evaluation loop in `src/eval.py` to compute Dice and IoU on validation set.
 
 ---
+
+## 2026-09-16 — Session 4: Checkpoint Forensics & 2025–2026 Research Digest
+
+**Date**: Wednesday, 2026-09-16  
+**Time**: 09:10 IST  
+
+---
+
+### What Was Done
+
+1. **Model Checkpoints Forensics**:
+   - Inspected `M:\chakramodelpro\_weights_check\weights\checkpoints\` contents via PyTorch inspection script.
+   - Identified `combo1_best.pth` (102.7 MB) as a **PraNet** (Res2Net + RFB1-4 + PPD + Reverse Attention RA1-4) architecture.
+   - Identified `chakra_transformer_best.pth` (1.24 GB) as a **Vision Transformer (ViT-Large / Segmenter)** with `cls_token`, `patch_embed.proj`, 24 Transformer blocks, and multi-scale `decode_head`.
+2. **2025–2026 Literature Synthesis**:
+   - Evaluated 4 prominent recent directions: State Space Models (Polyp-Mamba [P24], UltraLight VM-UNet [P25]), Pseudo-Depth Conditioning (DepthPolyp, May 2026), 3-stage hierarchical frameworks (PolypVision, Aug 2026), and Explainable CADx (PolypSeg-GradCAM, Jan 2026).
+   - Grounded SOTA performance matrix across Kvasir-SEG, CVC-ClinicDB, CVC-ColonDB, ETIS-Larib, and SUN-SEG benchmarks.
+3. **Digest Documentation**:
+   - Published structured Daily Research Digest artifact for the ChakraModel development pipeline.
+
+---
+
+### Results / Findings
+
+- **DONE**:
+  - Checkpoint structure verified via `torch.load`:
+    - `combo1_best.pth`: keys `{'enc0', 'enc1', 'enc2', 'enc3', 'enc4', 'rfb1', 'rfb2', 'rfb3', 'rfb4', 'ppd_conv', 'ppd_pred', 'ra1', 'ra2', 'ra3', 'ra4'}`.
+    - `chakra_transformer_best.pth`: keys `{'backbone', 'decode_head'}`.
+- **NOT YET RUN**:
+  - Live model training and test-split evaluation loops (`src/train.py` and `src/eval.py`).
+
+---
+
+### Blockers
+
+- None currently. Phase 2 baseline models (`src/models/pranet.py`, `src/models/unet.py`) are queued for coding.
+
+---
+
+### Next Steps
+
+1. Implement `src/models/pranet.py` matching the architecture of `combo1_best.pth`.
+2. Run zero-shot validation on `data/processed/test_splits/kvasir_test.txt` using `combo1_best.pth` to log real baseline numbers.
+3. Scaffold `src/models/transformer_segmenter.py` to interface with `chakra_transformer_best.pth`.
+
+---
+
+## 2026-09-17 — Session 5: 2026 SOTA Literature Synthesis & Chakra-v2 Architecture Roadmap
+
+**Date**: Thursday, 2026-09-17  
+**Time**: 09:10 IST  
+
+---
+
+### What Was Done
+
+1. **Frontier Literature Intelligence & Analysis**:
+   - Synthesized 2025–2026 emerging paradigms in polyp detection and segmentation: State Space Models (Mamba / CSG-Mamba, PolyMamba-Net), Foundation Model Adapters (ASAM2-UNet, Lite-PolypInductor), Diffusion Priors (Diff-Polyp [P57], InstEditSeg), and Real-Time Video Hysteresis (SUN-SEG [P33], PNS-Net [P10]).
+   - Re-verified benchmark metrics across 5 canonical datasets (Kvasir-SEG, CVC-ClinicDB, CVC-ColonDB, ETIS-Larib, CVC-300) directly against `docs/literature_review.md` without data fabrication.
+2. **Chakra-v2 Hybrid Architecture Specification**:
+   - Defined architectural bridge between fast spatial reverse attention (`combo1_best.pth`, 102.7 MB) and global semantic transformers (`chakra_transformer_best.pth`, 1.24 GB).
+   - Formulated 3-stage forward pipeline: Dual-Path Hybrid Encoder -> High-Frequency Boundary Gating -> Cascaded Reverse Attention Decoder.
+3. **Documentation Deliverables**:
+   - Authored comprehensive daily research digest at `docs/daily_research_digest_2026_09_17.md` and saved to brain artifacts.
+   - Updated arXiv license agreement record at `.licenses/literature_search_arxiv_LICENSE.txt`.
+
+---
+
+### Results / Findings
+
+- **DONE**:
+  - Frontier literature intelligence and SOTA comparison table compiled and grounded.
+  - SOTA performance ceiling confirmed: Polyp-Mamba ([P24], mDice 0.935 Kvasir, 0.812 ETIS, 48 FPS) and UltraLight VM-UNet ([P25], 49k params, >120 FPS).
+  - Checkpoint layer maps and tensor keys matched to PraNet and ViT-Large/Segmenter.
+- **PARTIALLY DONE**:
+  - Implementation of `src/models/pranet.py` to run `combo1_best.pth`.
+- **NOT YET RUN**:
+  - Live model execution of `combo1_best.pth` on `kvasir_test.txt` (Phase 2 Task 2).
+
+---
+
+### Blockers
+
+- None. Baseline model class creation is ready to begin.
+
+---
+
+### Next Steps
+
+1. Implement `src/models/pranet.py` with identical layer names (`enc0..4`, `rfb1..4`, `ppd_conv`, `ra1..4`).
+2. Run live inference of `combo1_best.pth` on `data/processed/test_splits/kvasir_test.txt` using `src/eval.py`.
+3. Compute and log real Dice, IoU, and measured FPS to `results/metrics/baseline_combo1.json`.
+
+
