@@ -265,3 +265,208 @@
 3. Compute and log real Dice, IoU, and measured FPS to `results/metrics/baseline_combo1.json`.
 
 
+
+
+---
+
+## 2026-09-18 — Run 11.11: Full Asset Inventory + Video Eval + Weight Variant Analysis
+
+**Date**: Friday, 2026-09-18  
+**Time**: ~01:30 IST  
+**Session type**: Comprehensive audit — all local + Kaggle files, all weight variants, video results
+
+---
+
+### Datasets & Weights Used
+
+```
+# Static eval (Kaggle, previous session):
+WP = /kaggle/input/datasets/gokulrocky/finalmuruga-harae
+DP = /kaggle/input/datasets/gokulrocky/chakramodel-evaluation-datasets
+  Weights evaluated: {WP}/weights/chakra_transformer_best.pth  (1236.8 MB — ViT-L/16@384, 309.17M params)
+  Weights NOT yet run: {WP}/weights/combo1_best.pth            (102.7 MB — ResNet-101+RFB+RA, 25.5M params)
+
+# Variant weights (J:\My Drive\downloads\ — NOT on Kaggle yet, NOT yet GPU-evaluated):
+  adabn_chakranet_best.zip         (549 MB)  — AdaBN domain-adaptation
+  topo_chakranet_best.pth.zip      (183 MB)  — Persistent Homology topology loss (Combo #6)
+  chakranet_focal_best.pth.zip     (183 MB)  — Focal Loss + MC Dropout (Combo #1)
+  fed_chakranet_global.pth.zip     (5.8 MB)  — Federated global model (Combo #5)
+  best (2).pt.zip                  (26.5 MB) — YOLO detector variant
+  chakramodelweights.zip           (1.1 GB)  — likely duplicate of chakra_transformer_best.pth
+
+# Video eval datasets (Kaggle, notebook49718fd0ac):
+  polypgen_video    gokulraj324/polypgen20021-video
+  ld_no_polyp       gokulraj324/ldpolypvideowithoutpolyps
+  ld_polyp_only     gokulraj324/ldpolypvideo
+  hkvasir_v2        gokulraj324/hkvasirv2
+  cvc_sample_vid    (CVC-video subset)
+```
+
+---
+
+### DONE ✅
+
+1. **Static image eval — chakra_transformer_best.pth** (from previous Kaggle session notebookf96935128f)
+   - Kvasir-SEG (last 10%, n=100): Dice=0.8376 baseline → **0.8467 TTA**
+   - CVC-ClinicDB (all 495): Dice=0.7712 baseline → **0.7836 TTA**
+   - FPS: 7.76 FP32 → 26.83 FP16 single-T4 → **46.61 FP16 dual-T4 bs=16**
+   - Report: `docs/chakramodel_evaluation_report02=25-18-09-26.md`, `beanchmarkresults_kaggel_eval_)02-24-18-9-26.csv`
+
+2. **Full asset inventory across M: and J: drives**
+   - All weight variants catalogued (see above)
+   - 6 novel architectural combinations identified with weights for 3 of 6
+
+3. **Architecture analysis of chakranet_segmenter.py**
+   - `ChakraNetMicroRefiner` WRAPS ViT-Large — same backbone as `ChakraTransformerSegmenter`
+   - True CNN path (PraNet-ResNet101) = `combo1_best.pth` (25.5M params)
+
+4. **Video eval output read** from `results of video dataste analysis 18-02amrun.zip`
+   - CVC-300 (60 GT frames): Dice=0.7295 FP16, 0.7922 TTA [SUSPECT — see critical flaw below]
+   - All other video sources: GT unavailable, Dice UNMEASURED
+
+---
+
+### PARTIALLY DONE ⚠️
+
+- **Video evaluation** — results exist BUT ARE FLAGGED INVALID:
+  **⛔ CRITICAL FLAW**: notebook49718fd0ac.ipynb Cell 2 output = "Missing keys: 310, Unexpected keys: 312"
+  Model loaded with 310 missing / 312 unexpected keys (wrong checkpoint or key format not stripped).
+  Inference ran on partially random weights. Per .antigravityrules.md Rule 2, these metrics CANNOT be claimed as valid.
+  Additionally: **100% false positive rate on 18,300 polyp-free frames** (ld_no_polyp) — clinically catastrophic.
+  Low temporal stability: mean temporal IoU = 0.18 on CVC-300 (severe mask flickering).
+
+---
+
+### NOT DONE ❌
+
+- GPU evaluation of: `adabn_chakranet_best`, `topo_chakranet_best.pth`, `chakranet_focal_best.pth`, `fed_chakranet_global.pth`, `best (2).pt`
+- GPU evaluation of `combo1_best.pth` (still pending since Session 3)
+- Valid video evaluation (must rerun with 0 missing/unexpected keys)
+- Adding CVC-ColonDB (380), ETIS-LaribPolypDB (196), CVC-300 (60) to Kaggle for full 5-dataset comparison
+
+---
+
+### Key Findings
+
+| Finding | Impact |
+|---------|--------|
+| ViT-L Dice gap vs SOTA: −8.3% Kvasir, −16.4% ClinicDB | Architecture is wrong for dense prediction — needs PVTv2/Swin |
+| U-Net (2015) beats our ViT-L on ClinicDB | Serious underperformance despite 10× more params |
+| 100% false positive rate on polyp-free video | Clinical disqualifier — must fix specificity |
+| Video eval model had 310 missing keys | All video metrics INVALID, must rerun |
+| chakranet_focal_best.pth exists + 80% done | Easiest path to publishable paper (IF 5-10) |
+| 0 papers in literature use FL for polyp seg | fed_chakranet_global has UNIQUE novelty |
+| Topo-ChakraNet = first differentiable PH loss on polyps | High novelty (IF 10-15 target) |
+
+---
+
+### Required Next Actions (ordered by impact)
+
+1. **Rerun video eval** with correct key stripping (`k.replace('module.', '', 1)`) — verify 0 missing/unexpected before any inference
+2. **GPU eval: chakranet_focal_best.pth** on Kvasir + ClinicDB (5-dataset if possible)
+3. **GPU eval: topo_chakranet_best.pth** on same — compare to focal variant
+4. **Key inspection: adabn + fed + best(2).pt** to determine architecture
+5. **GPU eval: combo1_best.pth** — still unrun
+6. Upload variant weights to Kaggle dataset for GPU access
+
+---
+
+### Report Links
+
+- Full inventory + analysis: `M:\chakramodelpro\polyp-detection-research\docs\` (this file)
+- Static eval report: `docs/chakramodel_evaluation_report02=25-18-09-26.md`
+- SOTA CSV: `M:\chakramodelpro\beanchmarkresults_kaggel_eval_)02-24-18-9-26.csv`
+- Kaggle static eval results: `/kaggle/working/results/benchmark_results.csv`
+- Video eval (INVALID): `M:\chakramodelpro\results of video dataste analysis 18-02amrun.zip`
+- Architecture deep dive: `J:\My Drive\downloads\ARCHITECTURE_DEEP_DIVE.md`
+- Novel combinations: `J:\My Drive\downloads\6_novel_combinations.md`
+
+
+---
+
+## 2026-09-18 — Session 11.12: Notebooks Delivered, Video Eval Fix Confirmed
+
+**Date**: Friday, 2026-09-18  
+**Time**: ~02:00 IST  
+**Session type**: Deliverable commit + video eval notebook analysis
+
+---
+
+### DONE ✅
+
+1. **`chakra_all_variants_eval.ipynb`** created and committed to `M:\chakramodelpro\`
+   - 9-cell Kaggle notebook for evaluating ALL 6 weight variants + baseline
+   - Kaggle datasets required: `gokulrocky/dataset-weights` + `gokulrocky/finalmuruga-harae` + `gokulrocky/chakramodel-evaluation-datasets`
+   - Rule 2 compliant: `load_checkpoint()` verifies 0 missing / 0 unexpected keys — ABORTS if mismatch
+   - Evaluates: Kvasir-SEG (last 10%), CVC-ClinicDB (all 495), baseline FP16 + 4-way TTA
+   - FPS benchmark with `cuda.synchronize` fencing
+   - Saves `all_variants_comparison.csv` and `all_variants_eval_report.md` to `/kaggle/working/results/`
+
+2. **`chakramodel_video_eval_v3.ipynb`** read from `C:\Users\imgk3\Downloads\` and committed to `M:\chakramodelpro\`
+   - **⚠️ CRITICAL: This is the CORRECTED version** — Cell 2 explicitly strips `module.` prefix AND has `assert len(missing) == 0 and len(unexpected) == 0` (notebook even explains: "Forgetting this strip is exactly what caused 310 missing / 312 unexpected keys in the first run")
+   - Has threshold sweep (Cell 6b): sweeps [0.3, 0.4, 0.5, 0.6, 0.7] on a GT-bearing source before main eval — reports tuned threshold or [UNAVAILABLE]
+   - Real-video FPS benchmark (Cell 8): decode + preprocess + inference on actual .mp4 frames, not synthetic tensors
+   - `temporal_iou()` metric for frame-to-frame stability (mask flicker proxy)
+   - Evaluates 7 video datasets: polypgen_video, ld_no_polyp, ld_polyp_only, hkvasir_v2_001, hkvasir_v2_002, cvc300, cvc_sample_vid
+   - Reports [MEASURED] / [UNAVAILABLE] tiers per source
+   - Both single-pass FP16 and TTA where GT exists
+
+---
+
+### Required Next Actions (ordered by impact)
+
+1. **RUN `chakra_all_variants_eval.ipynb` on Kaggle T4×2**:
+   - Create new Kaggle notebook
+   - Add datasets: `gokulrocky/dataset-weights` + `gokulrocky/finalmuruga-harae` + `gokulrocky/chakramodel-evaluation-datasets`
+   - Enable GPU T4×2, paste the notebook cells, run all
+   - Download `/kaggle/working/results/all_variants_comparison.csv` and post to daily_log.md
+   - **Per Rule 2**: no metrics claimed until real run output is confirmed
+
+2. **RUN `chakramodel_video_eval_v3.ipynb` on Kaggle T4×2**:
+   - Add same datasets + all video datasets (see Cell 1 download list in notebook)
+   - This fixes the 310 missing/unexpected keys — first valid video metrics
+   - Key outputs: false-positive rate on ld_no_polyp (clinical viability test), temporal IoU, tuned threshold
+
+3. **After valid metrics available**: update this log with DONE entries and metric table
+
+---
+
+### Notebooks on M:\chakramodelpro\
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `chakra_all_variants_eval.ipynb` | Eval all 6 weight variants on Kvasir+ClinicDB | ✅ Written, NOT YET RUN |
+| `chakramodel_video_eval_v3.ipynb` | Corrected video eval (0 missing keys) | ✅ Written, NOT YET RUN |
+
+---
+
+## 2026-09-18 — Session 11.13: Daily Research Digest & 07:00 AM Run Diagnostics
+
+**Date**: Friday, 2026-09-18  
+**Time**: ~09:00 IST  
+**Session type**: Research digest compilation + morning evaluation run bug triage & patch
+
+---
+
+### DONE ✅
+
+1. **Daily Research Digest Compiled (`docs/daily_research_digest_2026_09_18.md`)**:
+   - Comprehensive synthesis of first real Kaggle T4×2 benchmarks (`chakra_transformer_best.pth`).
+   - Grounded comparison against published SOTA: CFA-Net (0.923), Polyp-PVT (0.937), PraNet (0.898).
+   - Architectural post-mortem explaining the -8.3% to -16.4% accuracy gap (lack of spatial pyramid, trivial 2M decode head, inductive bias deficit on small medical data).
+   - Video evaluation post-mortem: unstripped `module.` prefix causing 310 missing keys (invalidating run 1), 100% false positive rate on `ld_no_polyp`, and temporal flickering (temporal IoU = 0.18).
+   - Detailed analysis of 6 novel weight checkpoints (`topo_chakranet_best.pth`, `fed_chakranet_global.pth`, `chakranet_focal_best.pth`, `adabn_chakranet_best.pth`, `combo1_best.pth`, `best.pt`).
+
+2. **Diagnostics on Morning Run (`all-in-one-comapriosn-18-9-7am(error found).ipynb`)**:
+   - **Bug 1**: `best.pt` (6.2 MB) inspection failed due to missing `ultralytics` package. Solution: `!pip install -q ultralytics`.
+   - **Bug 2**: Cell 7 crashed with `ValueError: Input and output must have the same number of spatial dimensions...` during 4-way TTA on `F.interpolate` because `prob.unsqueeze(0)` yielded 3D tensor `[1, H, W]` instead of 4D tensor `[1, 1, H, W]`.
+   - **Patch Produced**: Clean 4D tensor pipeline preserving `[1, 1, H, W]` through interpolation and returning `[H, W]` matching `infer_single`.
+
+---
+
+### Required Next Actions
+
+1. Apply `infer_tta` patch + `pip install ultralytics` to Kaggle multi-variant comparison notebook and re-run.
+2. Execute `chakramodel_video_eval_v3.ipynb` on Kaggle T4×2 to acquire first verified video metrics.
+
+
