@@ -1,0 +1,6 @@
+{
+  "_comment": "Copy to config.json to use. Every key is optional; defaults are found automatically.",
+  "input_root": "I:\\My Drive\\colon cancer\\colon_cancer_dataset",
+  "output_root": "J:\\My Drive\\valid models\\outputs",
+  "mirror_dirs": []
+}

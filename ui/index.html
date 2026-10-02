@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polyp Evaluation</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#16202a;--mute:#5d6b78;--line:#d9e0e7;--acc:#0f6a94;--acc-ink:#fff;--ok:#1a7f4b;--okbg:#e6f4ec;--bad:#b3261e;--badbg:#fdecea;--warn:#8a5a00;--warnbg:#fff4de;--drop:#eaf4f9}
+@media (prefers-color-scheme:dark){:root{--bg:#10161c;--card:#18212a;--ink:#e6edf3;--mute:#93a1ae;--line:#2c3945;--acc:#4aa8d8;--acc-ink:#07202e;--ok:#5fcf93;--okbg:#12301f;--bad:#ff8d85;--badbg:#3a1815;--warn:#f0c060;--warnbg:#38290a;--drop:#14303f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{max-width:980px;margin:0 auto;padding:22px 20px 6px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+h1{font-size:22px;margin:0}
+main{max-width:980px;margin:0 auto;padding:10px 20px 60px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;background:var(--card)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}.ok .dot{background:var(--ok)}.bad .dot{background:var(--bad)}
+label.f{display:grid;gap:5px;font-weight:600;font-size:14px}
+select,input[type=text],input[type=number],input[type=url]{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px}
+button.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600;padding:11px 20px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.cfg{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:4px;font-size:13px}
+.cfg div{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.cfg b{min-width:96px;color:var(--mute);font-weight:600}
+.cfg code{word-break:break-all}
+.pill{border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.warn{background:var(--warnbg);color:var(--warn)}
+.msg{border-radius:8px;padding:9px 12px;font-size:13px;margin-top:10px}.msg.bad{background:var(--badbg);color:var(--bad)}.msg.warn{background:var(--warnbg);color:var(--warn)}.msg.ok{background:var(--okbg);color:var(--ok)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.tabs button{border-radius:999px;padding:6px 14px}.tabs button[aria-selected=true]{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:600}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:34px 16px;text-align:center;color:var(--mute);cursor:pointer;transition:.15s}
+.drop.over{border-color:var(--acc);background:var(--drop);color:var(--ink)}.drop strong{color:var(--ink)}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:10px}.bar>i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.bar.ind>i{width:35%;animation:slide 1.2s infinite ease-in-out}@keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+.browser{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.bhead{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line);background:var(--bg)}
+.bhead code{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.blist{max-height:300px;overflow:auto}.row{display:flex;justify-content:space-between;gap:10px;padding:7px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.row:hover{background:var(--drop)}.row.sel{background:var(--acc);color:var(--acc-ink)}.row small{color:inherit;opacity:.7;white-space:nowrap}
+.sel-box{margin-top:12px;display:grid;gap:8px}
+video{width:100%;max-height:340px;border-radius:8px;background:#000}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+details summary{cursor:pointer;color:var(--mute);font-size:13px}
+pre.log{background:#0b1117;color:#cfe3f1;border-radius:8px;padding:12px;max-height:320px;overflow:auto;font:12px/1.45 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.jobrow{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.hint{color:var(--mute);font-size:13px}.spacer{height:6px}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>Polyp Evaluation</h1><div class="chips" id="mounts"></div></header>
+<main>
+<section id="view-form" style="display:contents">
+
+<div class="card" id="kaggleCard"><h2>Kaggle GPU (optional)</h2>
+  <div class="chips"><span class="chip" id="kChip"><i class="dot"></i><span id="kState">Not connected</span></span></div>
+  <div style="display:flex;gap:8px;margin-top:10px" id="kForm">
+    <input type="password" id="kUrl" placeholder="Paste the Kaggle Jupyter-server link (https://…kaggle.net/k/…/proxy)" autocomplete="off" spellcheck="false">
+    <button id="kConnect" class="primary" style="padding:8px 16px">Connect</button>
+  </div>
+  <div style="margin-top:10px" id="kActions" hidden><button id="kDisconnect">Disconnect</button></div>
+  <div class="hint" style="margin-top:8px">The link contains an access token. It is kept in memory only (never saved or logged) and expires with the Kaggle session. YOLO models only.</div>
+  <div class="hint" id="kLog"></div>
+  <div id="kErr"></div>
+</div>
+
+<div class="card"><h2>1 · Model</h2>
+  <label class="f">Model<select id="model"></select></label>
+  <div id="cfg" class="cfg"></div>
+  <div id="issues"></div>
+</div>
+
+<div class="card"><h2>2 · Video or dataset</h2>
+  <div class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="upload" aria-selected="true">Drag &amp; drop / Upload</button>
+    <button role="tab" data-tab="url" aria-selected="false">Video URL</button>
+    <button role="tab" data-tab="library" aria-selected="false">Google Drive</button>
+    <button role="tab" data-tab="dataset" aria-selected="false">Dataset folder</button>
+  </div>
+
+  <div data-pane="upload">
+    <div class="drop" id="drop" tabindex="0"><div><strong>Drop a video here</strong> or click to choose a file</div><div class="hint" id="dropHint"></div></div>
+    <input type="file" id="file" accept="video/*,.avi,.mkv,.mpg,.mpeg,.wmv" hidden>
+    <div class="bar" id="upBar" hidden><i></i></div><div class="hint" id="upStatus"></div>
+  </div>
+
+  <div data-pane="url" hidden>
+    <label class="f">Video URL<input type="url" id="url" placeholder="https://…/video.mp4  ·  Google Drive share link  ·  YouTube link"></label>
+    <div class="hint" id="urlHint"></div>
+  </div>
+
+  <div data-pane="library" hidden>
+    <div class="browser"><div class="bhead"><button id="libUp">↑ Up</button><button id="libRoots">Drives</button><code id="libPath"></code></div><div class="blist" id="libList"></div></div>
+  </div>
+
+  <div data-pane="dataset" hidden>
+    <div class="browser"><div class="bhead"><button id="dsUp">↑ Up</button><button id="dsRoots">Drives</button><code id="dsPath"></code><button id="dsUse" class="primary" style="padding:6px 12px">Use this folder</button></div><div class="blist" id="dsList"></div></div>
+    <div class="hint" style="margin-top:8px">Folder must contain PolypGen-style subfolders (e.g. <code>data_C1/images_C1</code>).</div>
+  </div>
+
+  <div class="sel-box" id="selBox" hidden>
+    <div class="msg ok" id="selText"></div>
+    <video id="preview" controls preload="metadata" hidden></video>
+    <div class="hint" id="previewNote"></div>
+  </div>
+</div>
+
+<div class="card"><h2>3 · Settings</h2>
+  <div class="grid2" style="margin-bottom:14px">
+    <div class="msg warn" id="remoteNote" hidden style="grid-column:1/-1">Remote-only mode: everything runs on the Kaggle GPU. Nothing is executed on this PC's CPU or GPU.</div>
+    <label class="f">Run on<select id="target"><option value="local">This PC</option><option value="kaggle" disabled>Kaggle GPU (not connected)</option></select></label>
+    <label class="f" id="compressRow" hidden style="align-content:end"><span><input type="checkbox" id="compress" checked> Compress before upload</span><span class="hint" style="font-weight:400">H.264, near-lossless. Your AVIs are 35–530 MB each, so this cuts upload time a lot; detections can differ slightly from the raw AVI. Untick for exact input.</span></label>
+  </div>
+  <div class="grid2">
+    <label class="f">Device<select id="device"><option value="auto">Auto (GPU if available)</option><option value="cuda">CUDA GPU</option><option value="cpu" id="cpuOpt">CPU</option></select></label>
+    <label class="f">Threshold <span id="thrVal" class="hint">0.50</span><input type="range" id="thr" min="0" max="1" step="0.01" value="0.5"></label>
+  </div>
+  <div class="spacer"></div>
+  <label class="f">Output folder <span class="hint" id="outRoot"></span><input type="text" id="outSub" placeholder="optional sub-folder, e.g. session_01"></label>
+  <div class="spacer"></div>
+  <details><summary>Advanced</summary>
+    <div class="grid2" style="margin-top:10px">
+      <label class="f">Weights override<input type="text" id="ovWeights" placeholder="leave empty to use the model's own weights"></label>
+      <label class="f">Library parent override<input type="text" id="ovLib" placeholder="folder that CONTAINS lib/ (segmentation models)"></label>
+      <label class="f">Frame stride (segmentation on video)<input type="number" id="stride" min="1" max="60" value="1"></label>
+    </div>
+  </details>
+</div>
+
+<div><button class="primary" id="run" disabled>Start evaluation</button> <span class="hint" id="runHint"></span></div>
+<div id="formErr"></div>
+
+<div class="card" id="recent" hidden><h2>Recent jobs</h2><div id="recentList"></div></div>
+</section>
+
+<section id="view-job" hidden style="display:none">
+  <div class="card">
+    <h2>Job <span id="jId"></span></h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><span id="jStatus" class="pill warn"></span><strong id="jLabel"></strong><span class="hint" id="jSource"></span></div>
+    <div class="bar" id="jBar"><i></i></div>
+    <div class="hint" id="jStage" style="margin-top:6px"></div>
+    <div id="jErr"></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button id="jCancel">Cancel job</button><button id="jBack">← New run</button></div>
+  </div>
+  <div class="card" id="jResult" hidden style="margin-top:16px"><h2>Result</h2>
+    <div class="cfg"><div><b>Output</b><code id="jOut"></code><button id="jCopy" style="padding:2px 10px">Copy</button></div></div>
+    <video id="jVideo" controls preload="metadata" hidden style="margin-top:12px"></video>
+  </div>
+  <div class="card" style="margin-top:16px"><h2>Log</h2><pre class="log" id="jLog"></pre><details style="margin-top:8px"><summary>Command</summary><code id="jCmd" style="word-break:break-all"></code></details></div>
+</section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const h = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const [k, v] of Object.entries(attrs)) k === "class" ? e.className = v : e.setAttribute(k, v); e.append(...kids); return e; };
+const S = { state: null, model: null, tab: "upload", source: null, uploading: false, lib: {path: ""}, ds: {path: ""} };
+const fmtSize = n => n > 1073741824 ? (n / 1073741824).toFixed(2) + " GB" : (n / 1048576).toFixed(1) + " MB";
+async function api(path, opts) {
+  const r = await fetch(path, opts); let data = {};
+  try { data = await r.json(); } catch (_) {}
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+function msg(target, kind, text) { target.replaceChildren(text ? h("div", {class: "msg " + kind}, text) : ""); }
+
+/* ---------- state, mounts, model auto-configuration ---------- */
+async function loadState() {
+  S.state = await api("/api/state");
+  const {input, output} = S.state;
+  $("mounts").replaceChildren(
+    chip(input.ok, input.ok ? `Input ${input.drive}  ${input.root}` : "Input dataset drive not found"),
+    chip(output.ok, `Output ${output.drive}  ${output.free_gb ?? "?"} GB free`));
+  $("outRoot").textContent = "→ " + output.root + "\\";
+  S.kaggle = S.state.kaggle; S.remoteOnly = !!S.state.remote_only; applyRemoteOnly(); renderKaggle();
+  $("urlHint").textContent = "Direct video links and Google Drive share links work" + (S.state.caps.ytdlp ? ", and YouTube/Vimeo via yt-dlp." : ". For YouTube/Vimeo install yt-dlp (pip install yt-dlp).");
+  $("dropHint").textContent = `${S.state.video_ext.join("  ")} · up to ${(S.state.limits.max_upload_mb / 1024).toFixed(0)} GB`;
+  const sel = $("model"), prev = sel.value;
+  sel.replaceChildren(...S.state.models.map(m => h("option", {value: m.key}, m.label + (m.ready ? "" : "  — setup needed"))));
+  sel.value = S.state.models.some(m => m.key === prev) ? prev : (S.state.models.find(m => m.ready) || S.state.models[0] || {}).key;
+  onModel();
+}
+const chip = (ok, text) => h("span", {class: "chip " + (ok ? "ok" : "bad")}, h("i", {class: "dot"}), text);
+
+function applyRemoteOnly() {
+  const ro = !!S.remoteOnly;
+  $("remoteNote").hidden = !ro;
+  const local = document.querySelector('#target option[value="local"]');
+  local.disabled = ro; local.hidden = ro;
+  $("cpuOpt").disabled = ro; $("cpuOpt").hidden = ro;
+  if (ro) { $("target").value = "kaggle"; if ($("device").value === "cpu") $("device").value = "cuda"; $("compressRow").hidden = false; }
+}
+
+function onModel() {
+  const m = S.model = S.state.models.find(x => x.key === $("model").value);
+  if (!m) return;
+  const row = (k, v, ok) => h("div", {}, h("b", {}, k), h("code", {}, v), ok === undefined ? "" : h("span", {class: "pill " + (ok ? "ok" : "bad")}, ok ? "found" : "missing"));
+  const weightsOk = !m.issues.some(i => i.startsWith("Weights"));
+  const rows = [row("Engine", m.engine === "yolo" ? "Ultralytics YOLO (video in → annotated video out)" : m.engine === "segmentation" ? "Segmentation evaluator (dataset or video frames)" : "No runner available")];
+  if (m.engine !== "unsupported") rows.push(row("Weights", m.weights + (m.weights_mb ? `  (${m.weights_mb} MB)` : ""), weightsOk));
+  if (m.lib_parent) rows.push(row("Library parent", m.lib_parent, !m.issues.some(i => i.startsWith("Model source"))));
+  if (m.evaluator) rows.push(row("Evaluator", m.evaluator, !m.issues.some(i => i.startsWith("Evaluator"))));
+  $("cfg").replaceChildren(...rows);
+  const remote = $("target").value === "kaggle";
+  $("issues").replaceChildren(...(remote ? (m.engine === "yolo" ? [h("div", {class: "msg warn"}, "Runs on Kaggle: weights are reused, pulled from the shared Drive folder, or uploaded from this PC (verified by SHA-256).")] : [h("div", {class: "msg bad"}, "Only YOLO models can run on Kaggle.")]) : m.issues.map(i => h("div", {class: "msg bad"}, i))));
+  const datasetOk = m.inputs.includes("dataset") && !remote;
+  document.querySelector('[data-tab="dataset"]').hidden = !datasetOk;
+  if (!datasetOk && S.tab === "dataset") setTab("upload");
+  if (S.source && S.source.type === "dataset" && !datasetOk) clearSource();
+  refreshRun();
+}
+
+/* ---------- tabs ---------- */
+function setTab(t) {
+  S.tab = t;
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === t));
+  document.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== t);
+  if (t === "library" && !$("libList").children.length) browse("lib", S.state.input.root || "");
+  if (t === "dataset" && !$("dsList").children.length) browse("ds", S.state.input.root || "");
+  if (t === "url") setSource($("url").value.trim() ? {type: "url", url: $("url").value.trim()} : null, $("url").value.trim());
+  else if (t === "upload") { if (!(S.source && S.source.type === "upload")) clearSource(); }
+}
+$("tabs").addEventListener("click", e => { const b = e.target.closest("button"); if (b) setTab(b.dataset.tab); });
+
+/* ---------- selection summary + preview ---------- */
+function clearSource() { S.source = null; $("selBox").hidden = true; stopPreview(); refreshRun(); }
+function stopPreview() { const v = $("preview"); v.pause(); v.removeAttribute("src"); v.load(); v.hidden = true; $("previewNote").textContent = ""; }
+function setSource(src, text, previewUrl, fileName) {
+  S.source = src; refreshRun();
+  if (!src) { $("selBox").hidden = true; stopPreview(); return; }
+  $("selBox").hidden = false; $("selText").textContent = "Selected: " + text;
+  stopPreview();
+  if (previewUrl) {
+    const v = $("preview"), ext = (fileName || "").split(".").pop().toLowerCase();
+    const mime = {mp4: "video/mp4", webm: "video/webm", mov: "video/quicktime", avi: "video/x-msvideo", mkv: "video/x-matroska"}[ext] || "";
+    if (mime && v.canPlayType(mime)) { v.src = previewUrl; v.hidden = false; }
+    else $("previewNote").textContent = `The browser cannot preview .${ext} files; the model can still process it.`;
+  }
+}
+
+/* ---------- upload: drag & drop / file picker ---------- */
+const drop = $("drop");
+drop.addEventListener("click", () => $("file").click());
+drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") $("file").click(); });
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]); });
+$("file").addEventListener("change", e => { if (e.target.files[0]) upload(e.target.files[0]); e.target.value = ""; });
+
+function upload(file) {
+  const ext = "." + file.name.split(".").pop().toLowerCase();
+  if (!S.state.video_ext.includes(ext)) return setUpStatus("bad", `Unsupported type ${ext}.`);
+  if (file.size > S.state.limits.max_upload_mb * 1048576) return setUpStatus("bad", "File exceeds the upload limit.");
+  clearSource(); S.uploading = true; refreshRun();
+  const bar = $("upBar"); bar.hidden = false; bar.firstElementChild.style.width = "0";
+  setUpStatus("", `Uploading ${file.name} (${fmtSize(file.size)})…`);
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/upload");
+  xhr.setRequestHeader("X-Filename", encodeURIComponent(file.name));
+  xhr.upload.onprogress = e => { if (e.lengthComputable) { bar.firstElementChild.style.width = (100 * e.loaded / e.total) + "%"; setUpStatus("", `Uploading ${file.name}: ${fmtSize(e.loaded)} / ${fmtSize(e.total)}`); } };
+  xhr.onload = () => {
+    S.uploading = false;
+    let data = {}; try { data = JSON.parse(xhr.responseText); } catch (_) {}
+    if (xhr.status !== 201) { bar.hidden = true; setUpStatus("bad", data.error || "Upload failed."); return refreshRun(); }
+    setUpStatus("ok", `Uploaded ${data.name} (${fmtSize(data.size)}).`); bar.hidden = true;
+    setSource({type: "upload", id: data.upload_id}, `${data.name} (${fmtSize(data.size)})`, URL.createObjectURL(file), data.name);
+  };
+  xhr.onerror = () => { S.uploading = false; bar.hidden = true; setUpStatus("bad", "Upload failed: connection lost."); refreshRun(); };
+  xhr.send(file);
+}
+function setUpStatus(kind, text) { const e = $("upStatus"); e.textContent = text; e.style.color = kind === "bad" ? "var(--bad)" : kind === "ok" ? "var(--ok)" : ""; }
+
+/* ---------- URL ---------- */
+$("url").addEventListener("input", () => { const u = $("url").value.trim(); setSource(/^https?:\/\//i.test(u) ? {type: "url", url: u} : null, u); });
+
+/* ---------- Drive / dataset browsers ---------- */
+async function browse(which, path) {
+  const kind = which === "lib" ? "video" : "dir", list = $(which + "List");
+  list.replaceChildren(h("div", {class: "row"}, "Loading…"));
+  try {
+    const d = await api(`/api/browse?kind=${kind}&path=${encodeURIComponent(path)}`);
+    S[which] = d; $(which + "Path").textContent = d.path || "Mounted drives";
+    $(which + "Up").disabled = d.parent === null;
+    list.replaceChildren(...(d.entries.length ? d.entries.map(e => {
+      const r = h("div", {class: "row"}, h("span", {}, (e.type === "dir" ? "📁 " : "🎞 ") + e.name), h("small", {}, e.size ? fmtSize(e.size) : ""));
+      r.onclick = () => {
+        if (e.type === "dir") return browse(which, e.path);
+        list.querySelectorAll(".row.sel").forEach(x => x.classList.remove("sel")); r.classList.add("sel");
+        setSource({type: "library", path: e.path}, `${e.name} (${fmtSize(e.size)})`, "/api/media?path=" + encodeURIComponent(e.path), e.name);
+      };
+      return r;
+    }) : [h("div", {class: "row"}, kind === "video" ? "No videos in this folder." : "No sub-folders.")]));
+  } catch (err) { list.replaceChildren(h("div", {class: "row", style: "color:var(--bad)"}, err.message)); }
+}
+$("libUp").onclick = () => browse("lib", S.lib.parent || "");
+$("libRoots").onclick = () => browse("lib", "");
+$("dsUp").onclick = () => browse("ds", S.ds.parent || "");
+$("dsRoots").onclick = () => browse("ds", "");
+$("dsUse").onclick = () => { if (S.ds.path) setSource({type: "dataset", path: S.ds.path}, S.ds.path); };
+
+/* ---------- settings + run ---------- */
+$("thr").addEventListener("input", () => $("thrVal").textContent = (+$("thr").value).toFixed(2));
+$("model").addEventListener("change", onModel);
+function refreshRun() {
+  const m = S.model, remote = $("target").value === "kaggle", overridden = $("ovWeights").value.trim() || $("ovLib").value.trim();
+  let why = "";
+  if (!m) why = "Loading…";
+  else if (remote && m.engine !== "yolo") why = "Only YOLO models run on Kaggle.";
+  else if (remote && !(S.kaggle && S.kaggle.connected)) why = "Connect the Kaggle session first.";
+  else if (!remote && !(m.ready || (m.engine !== "unsupported" && overridden))) why = "Fix the model setup issues above first.";
+  else if (S.uploading) why = "Waiting for upload…";
+  else if (!S.source) why = "Choose a video or dataset.";
+  else if (remote && S.source.type === "dataset") why = "Dataset folders cannot run on Kaggle.";
+  $("run").disabled = !!why; $("runHint").textContent = why === "Loading…" ? "" : why;
+}
+$("target").addEventListener("change", () => { $("compressRow").hidden = $("target").value !== "kaggle"; if (S.model) onModel(); if (S.source && S.source.type === "dataset" && $("target").value === "kaggle") clearSource(); refreshRun(); });
+
+/* ---------- Kaggle session ---------- */
+let kTimer = null;
+function renderKaggle() {
+  const k = S.kaggle || {state: "disconnected"}, busy = k.state === "connecting" || k.state === "preparing";
+  const label = {disconnected: "Not connected", connecting: "Connecting…", preparing: "Connected · preparing: " + (k.step || ""), ready: "Ready · GPU: " + (k.gpu || "?"), error: "Error"}[k.state] || k.state;
+  $("kState").textContent = label;
+  $("kChip").className = "chip " + (k.state === "ready" ? "ok" : k.state === "error" ? "bad" : "");
+  $("kForm").hidden = k.connected; $("kActions").hidden = !k.connected;
+  $("kLog").textContent = (k.log || []).slice(-3).join("  ·  ");
+  msg($("kErr"), "bad", k.state === "error" ? k.error || "Kaggle session failed." : "");
+  const opt = document.querySelector('#target option[value="kaggle"]');
+  opt.disabled = !k.connected && !S.remoteOnly; opt.textContent = k.connected ? "Kaggle GPU (" + k.state + ")" : "Kaggle GPU (not connected)";
+  if (S.remoteOnly) { $("target").value = "kaggle"; $("compressRow").hidden = false; }
+  else if (!k.connected && $("target").value === "kaggle") { $("target").value = "local"; $("compressRow").hidden = true; if (S.model) onModel(); }
+  clearTimeout(kTimer); if (busy) kTimer = setTimeout(pollKaggle, 1500);
+  refreshRun();
+}
+async function pollKaggle() { try { S.kaggle = await api("/api/kaggle"); } catch (_) {} renderKaggle(); }
+$("kConnect").onclick = async () => {
+  const url = $("kUrl").value.trim(); if (!url) return;
+  $("kConnect").disabled = true; msg($("kErr"), "", ""); $("kState").textContent = "Connecting…";
+  try { S.kaggle = await api("/api/kaggle/connect", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({url})}); $("kUrl").value = ""; if (S.kaggle.connected) { $("target").value = "kaggle"; $("compressRow").hidden = false; if (S.model) onModel(); } }
+  catch (e) { S.kaggle = {state: "disconnected"}; renderKaggle(); msg($("kErr"), "bad", e.message); }
+  $("kConnect").disabled = false; renderKaggle();
+};
+$("kDisconnect").onclick = async () => { try { S.kaggle = await api("/api/kaggle/disconnect", {method: "POST", headers: {"Content-Type": "application/json"}, body: "{}"}); } catch (_) {} renderKaggle(); };
+["ovWeights", "ovLib"].forEach(id => $(id).addEventListener("input", refreshRun));
+$("run").onclick = async () => {
+  msg($("formErr"), "", ""); $("run").disabled = true;
+  const body = {model: S.model.key, source: S.source, target: $("target").value, compress_upload: $("compress").checked, device: $("device").value, threshold: +$("thr").value, out_subdir: $("outSub").value.trim(), frame_stride: +$("stride").value || 1,
+                overrides: {weights: $("ovWeights").value.trim(), lib_parent: $("ovLib").value.trim()}};
+  try { const j = await api("/api/run", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)}); location.hash = "job/" + j.id; }
+  catch (e) { msg($("formErr"), "bad", e.message); }
+  refreshRun();
+};
+
+/* ---------- recent jobs ---------- */
+async function loadRecent() {
+  try {
+    const {jobs} = await api("/api/jobs");
+    $("recent").hidden = !jobs.length;
+    $("recentList").replaceChildren(...jobs.slice(0, 8).map(j => { const r = h("div", {class: "jobrow"}, h("span", {}, `${j.label} · ${j.source}`), h("span", {class: "pill " + pillKind(j.status)}, j.status)); r.onclick = () => location.hash = "job/" + j.id; return r; }));
+  } catch (_) {}
+}
+const pillKind = s => s === "completed" ? "ok" : s === "failed" || s === "cancelled" ? "bad" : "warn";
+
+/* ---------- job view ---------- */
+let pollTimer = null;
+async function showJob(id) {
+  $("view-form").style.display = "none"; $("view-job").style.display = "block"; $("view-job").hidden = false;
+  clearTimeout(pollTimer);
+  try {
+    const j = await api("/api/jobs/" + id);
+    $("jId").textContent = "#" + j.id; $("jLabel").textContent = j.label; $("jSource").textContent = j.source;
+    const st = $("jStatus"); st.textContent = j.status; st.className = "pill " + pillKind(j.status);
+    const running = j.status === "queued" || j.status === "running";
+    const bar = $("jBar"); bar.classList.toggle("ind", running && j.progress == null);
+    bar.firstElementChild.style.width = j.progress == null ? (running ? "" : "100%") : (100 * j.progress) + "%";
+    const t0 = j.started || j.created, secs = Math.max(0, Math.round(((j.finished || j.now) - t0)));
+    $("jStage").textContent = `${j.stage}${j.detail ? " · " + j.detail : ""} · ${Math.floor(secs / 60)}m ${secs % 60}s`;
+    msg($("jErr"), "bad", j.error || "");
+    $("jCancel").hidden = !running;
+    const log = $("jLog"), stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 20;
+    log.textContent = j.log.join("\n"); if (stick) log.scrollTop = log.scrollHeight;
+    $("jCmd").textContent = j.command ? j.command.join(" ") : "";
+    $("jResult").hidden = j.status !== "completed";
+    if (j.status === "completed") {
+      $("jOut").textContent = j.output_file || j.out_dir;
+      const v = $("jVideo"); if (j.has_video && !v.src) { v.src = `/api/jobs/${j.id}/output`; v.hidden = false; }
+    }
+    $("jCancel").onclick = () => api(`/api/jobs/${j.id}/cancel`, {method: "POST"}).then(() => showJob(id));
+    if (running) pollTimer = setTimeout(() => showJob(id), 1000);
+  } catch (e) { msg($("jErr"), "bad", e.message); }
+}
+$("jBack").onclick = () => { location.hash = ""; };
+$("jCopy").onclick = () => navigator.clipboard && navigator.clipboard.writeText($("jOut").textContent);
+function route() {
+  const m = location.hash.match(/^#job\/([0-9a-f]{8})$/);
+  if (m) { $("jVideo").removeAttribute("src"); showJob(m[1]); return; }
+  clearTimeout(pollTimer); $("view-job").style.display = "none"; $("view-form").style.display = "contents"; loadRecent(); loadState().catch(e => msg($("formErr"), "bad", e.message));
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
