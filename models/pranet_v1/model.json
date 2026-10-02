@@ -1,0 +1,8 @@
+{
+  "name": "PraNet-V1 (Res2Net50)",
+  "engine": "segmentation",
+  "weights": "weights.pth",
+  "library_parent": ".",
+  "evaluator": "evaluate_pranetv1_polypgen_full.py",
+  "status": "checkpoint_ready_library_source_required"
+}

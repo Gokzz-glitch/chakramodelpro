@@ -1,0 +1,7 @@
+{
+  "name": "YOLOViT (yolo_best.pt)",
+  "engine": "ultralytics",
+  "weights": "weights.pt",
+  "library_parent": ".",
+  "status": "ready"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "YOLOViT (VIT.pt)",
+  "engine": "ultralytics",
+  "weights": "weights.pt",
+  "library_parent": ".",
+  "status": "ready"
+}

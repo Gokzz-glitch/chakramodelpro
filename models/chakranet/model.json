@@ -1,0 +1,9 @@
+{
+  "name": "ChakraNet (adabn_chakranet_best.pth)",
+  "engine": "unknown_pytorch",
+  "weights": "weights.pth",
+  "companion_archive": "student_teacher.zip",
+  "architecture_source": "architecture_source.ipynb",
+  "library_parent": ".",
+  "status": "architecture_source_present_runner_required"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "PVT-PraNet-V1 (PVTv2-B2)",
+  "engine": "segmentation",
+  "weights": "weights.pth",
+  "library_parent": ".",
+  "evaluator": "evaluate_pvt_pranetv1_polypgen_full.py",
+  "status": "checkpoint_ready_library_source_required"
+}
